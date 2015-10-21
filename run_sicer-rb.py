@@ -15,7 +15,7 @@ def options():
     parser.add_argument("--winsize", dest="winsize", help="SICER window size", default="200")
     parser.add_argument("--fragsize", dest="fragsize", help="SICER fragment size", default="150")
     parser.add_argument("--egf", dest="egf", help="SICER Effective Genome Fraction", default="0.95")
-    parser.add_argument("--gap_size", dest="gap_size", help="SICER gap size", default="400")
+    parser.add_argument("--gap_size", dest="gap_size", help="SICER gap size", default="600")
     parser.add_argument("--eval", dest="eval", help="SICER RB E-value", default="100")
     args = parser.parse_args()
     return args

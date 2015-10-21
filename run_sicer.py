@@ -15,8 +15,9 @@ def options():
     parser.add_argument("--rdthresh", dest="rdthresh", help="SICER redundancy threshold", default="1")
     parser.add_argument("--winsize", dest="winsize", help="SICER window size", default="200")
     parser.add_argument("--fragsize", dest="fragsize", help="SICER fragment size", default="150")
+    # Maybe efg for Brachy should be: 0.84 or 0.98 depending on how you look at it.
     parser.add_argument("--egf", dest="egf", help="SICER Effective Genome Fraction", default="0.95")
-    parser.add_argument("--gap_size", dest="gap_size", help="SICER gap size", default="400")
+    parser.add_argument("--gap_size", dest="gap_size", help="SICER gap size", default="600")
     parser.add_argument("--FDR", dest="FDR", help="SICER False Discovery Rate", default="1E-2")
     args = parser.parse_args()
     return args
