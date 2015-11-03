@@ -1,4 +1,4 @@
-ChIP-seq Pipeline Information:
+ChIP-seq Pipeline Information
 ==========================
 
 Requirements:
