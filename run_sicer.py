@@ -6,7 +6,8 @@ import os
 
 
 def options():
-    parser = argparse.ArgumentParser(description="Run SICER on Treatment vs Control")
+    parser = argparse.ArgumentParser(description="Run SICER on Treatment vs Control",
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("InputDir", help="Directory where input files are located")
     parser.add_argument("bed_file", help="Treatment bed file for sample size")
     parser.add_argument("control_file", help="Control bed file for sample size")
@@ -19,6 +20,9 @@ def options():
     parser.add_argument("--egf", dest="egf", help="SICER Effective Genome Fraction", default="0.95")
     parser.add_argument("--gap_size", dest="gap_size", help="SICER gap size", default="600")
     parser.add_argument("--FDR", dest="FDR", help="SICER False Discovery Rate", default="1E-2")
+    parser.add_argument("--sicer",
+                        default = "/shares/tmockler_share/clizarraga/usr/local/SICER_V1.1/SICER/SICER.sh",
+                        help = "SICER.sh absolute path")
     args = parser.parse_args()
     return args
 
@@ -34,24 +38,23 @@ def main():
     args.InputDir = os.path.abspath(args.InputDir)
     basepre = '-'.join(args.bed_file.split('-')[3:7])
     OutputDir = os.path.join(args.OutputDir, basepre)
-    print(OutputDir)
+    print("Attempting to make: {0}".format(OutputDir))
     try:
         os.makedirs(OutputDir)
     except OSError:
         if not os.path.isdir(OutputDir):
             raise
     # Creating the output file path.
-    SICER = "/shares/tmockler_share/clizarraga/usr/local/SICER_V1.1/SICER/SICER.sh"
     # Generate Indices
     # sh DIR/SICER.sh ["InputDir"] ["bed file"] ["control file"] ["OutputDir"]
     # ["Species"] ["redundancy threshold"] ["window size (bp)"] ["fragment size"]
     # ["effective genome fraction"] ["gap size (bp)"] ["FDR"]
     cmd = "sh {0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11}" \
-          .format(SICER, args.InputDir, args.bed_file, args.control_file, OutputDir, args.species,
+          .format(args.sicer, args.InputDir, args.bed_file, args.control_file, OutputDir, args.species,
                   args.rdthresh, args.winsize, args.fragsize, args.egf, args.gap_size, args.FDR)
     print("Running cmd: ")
     print(cmd)
-    subprocess.call(cmd, shell=True)
+    # subprocess.call(cmd, shell=True)
 
 if __name__ == "__main__":
     main()
