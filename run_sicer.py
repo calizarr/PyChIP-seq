@@ -54,7 +54,7 @@ def main():
                   args.rdthresh, args.winsize, args.fragsize, args.egf, args.gap_size, args.FDR)
     print("Running cmd: ")
     print(cmd)
-    # subprocess.call(cmd, shell=True)
+    subprocess.call(cmd, shell=True)
 
 if __name__ == "__main__":
     main()
