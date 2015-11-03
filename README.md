@@ -8,6 +8,7 @@ Requirements:
   * [MACS2][MACS2] (script coming soon)
   * [Trimmomatic][trim]
   * [STAR][STAR]
+  * [phantompeakqualtools][phantompeakqualtools]
 
 Usage:
 ------
@@ -27,7 +28,7 @@ Individual Steps:
 -----------------
 
 #### QC Steps ####
-  * After mapping reads to genome, check the cross-correlation plot for each bam file with [phantompeakqualtools][phantompeakqualtools]
+  * After mapping reads to genome, check the cross-correlation plot for each bam file with phantompeakqualtools.
   * `Rscript run_spp.R -c=$bamfile -savp -out=$bamfile.spp_out`
   * $bamfile is the path to your bamfile.
   * Run multiple at a time with parallel or a variation of the bash for loop given below in SICER steps.
