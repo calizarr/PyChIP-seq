@@ -26,6 +26,13 @@ Each of the python files has its own usage on the command line with the -h optio
 Individual Steps:
 -----------------
 
+#### QC Steps ####
+  * After mapping reads to genome, check the cross-correlation plot for each bam file with [phantompeakqualtools][phantompeakqualtools]
+  * `Rscript run_spp.R -c=$bamfile -savp -out=$bamfile.spp_out`
+  * $bamfile is the path to your bamfile.
+  * Run multiple at a time with parallel or a variation of the bash for loop given below in SICER steps.
+  * There will be two output files with run_spp.R: 1) text file with statistics 2) pdf file with cross-correlation plot
+
 #### 1. trim_adapters ####
   * Make sure to provide path to Trimmomatic, java command, and fasta adapters in command or edit script.
   * The default java heapsizes are (8g, 15g) change if necessary.
@@ -65,3 +72,7 @@ Individual Steps:
 [STAR]: https://github.com/alexdobin/STAR "STAR"
 
 [MACS2]: https://github.com/taoliu/MACS/ "MACS2"
+
+[phantompeakqualtools]: https://code.google.com/p/phantompeakqualtools/ "Phantom Peak Qualtools"
+
+
