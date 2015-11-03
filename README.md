@@ -52,6 +52,7 @@ Individual Steps:
           * $bam is the bam file directory for all bams, $output is output directory, $y is the bam trading .bam for .bed extension
       * To convert to several bed files to chr[1-X]:
           *  `sed -- 's/$original/chr/g' $infile > $outfile`
+          *  $original is your non-chr chromosome name prefix i.e. Bd for Bd1-5 or scaffold for scaffold12345
       * Options are self-explanatory.
       * run_sicer is to be used with control files & input files.
       * run_sicer-rb is to be used only with input files.
