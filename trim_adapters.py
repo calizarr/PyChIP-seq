@@ -28,6 +28,9 @@ def options():
     parser.add_argument("-mah", "--max_heap",
                         default = "15g",
                         help="Maximum size of java command RAM usage")
+    parser.add_argument("-config",
+                        default = None,
+                        help = "Path to config file if used.")
     args = parser.parse_args()
     return args
 
@@ -42,8 +45,15 @@ def main():
     # Getting just the file name
     basename = os.path.basename(args.input_file)
     print("Basename is: {0}".format(basename))
+    output_base = os.path.join(dirname, "Filtered")
+    print("Attempting to create directory base: {0}".format(output_base))
+    try:
+        os.makedirs(output_base)
+    except OSError:
+        if not os.path.isdir(output_base):
+            raise
     # Creating the output filename.
-    output_file = os.path.join(dirname, "Filtered", basename + ".filtered")
+    output_file = os.path.join(output_base, basename + ".filtered")
     call = "{0} -Xms8g -Xmx15g -XX:+UseG1GC -XX:+UseStringDeduplication -jar {1}".format(args.java_command, args.trimmomatic)
     cmd = "{0} SE -threads {1} -phred{2} {3} {4} ILLUMINACLIP:{5}:2:30:10 LEADING:{6} TRAILING:{7} MINLEN:{8}" \
           .format(call, args.nThreads, args.phred, args.input_file, output_file, args.fasta_adapters,
