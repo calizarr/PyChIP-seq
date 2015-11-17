@@ -23,7 +23,7 @@ Each of the python files has its own usage on the command line with the -h optio
   * Make sure to change any default paths in each of the scripts (or include the optional commandline arguments).
       * For example: Paths to trimmomatic, java command, and fasta adapters in trim_adapters.py
 
-Wrapper scripts exist:
+Wrapper scripts:
 ------------------------
   * Python wrapper script: run_chip-seq.py
   * Python to shell wrapper script: run_chip-seq_bash.py
