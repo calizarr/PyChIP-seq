@@ -35,10 +35,10 @@ Wrapper scripts:
       * The scripts use a method of glob discovery to find files.
           * All of the extension requirements can be changed within the wrapper script in the glob.glob settings.
           * trim_adapters: Files must be in the same directory and have .fastq as their extension
-          * map_reads: Files must be in the same directory and have .fastq.filtered as their extension
-          * bed: Files must be in separate subdirectories under one master directory and have *sortedByCoord.out.bam as their extension
-          * bed_chr: Files must be in the same directory and have .bed as their extension
-          * sicer or sicer-rb: Files must be in the same directory and have .sicer.bed as their extension.
+          * map_reads: Files must be in the same directory and have .fastq.filtered (output of trim_adapters) as their extension
+          * bed: Files must be in separate subdirectories under one master directory and have .sortedByCoord.out.bam (output of map_reads) as their extension
+          * bed_chr: Files must be in the same directory and have .bed (output of bed) as their extension
+          * sicer or sicer-rb: Files must be in the same directory and have .sicer.bed (output of bed_chr) as their extension.
               * If using controls or samples make sure sample files have "sample" and "RepXX" (i.e. Rep03) and control files have "control" and "RepXX" (i.e. Rep03 for the same control for the same sample.) Replicate numbers must match for a sample and control to be run together otherwise nothing is run.
   
 
