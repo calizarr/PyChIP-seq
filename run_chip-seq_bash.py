@@ -7,7 +7,6 @@ import sys
 import datetime
 import glob
 import pdb
-import re
 
 def options():
     parser = argparse.ArgumentParser(description="Create bash script to run ChIP-seq pipeline",
@@ -49,114 +48,83 @@ def main():
         # trim_adapters.py nThreads cutoff_qual minlen phred input_file -fa -trim -jc -mih -mah
         # More info available by running python trim_adapters.py -h
         input_dir = Config.get("ALL", "fastq_dir")
-        files = glob.glob(os.path.join(input_dir,"*.fastq"))
-        # files = Config.get("TRIM", "input_file").split(',')
-        # files = [f.strip() for f in files]
-        for f in files: 
-            cmd = "python trim_adapters.py -input_file {0} -config {1}".format(f, args.config)
-            cmd = logcommand.format(insert=cmd)
-            # cmdlist.append(cmd)
-            print(cmd, file=os.path.join(args.outdir, "output.txt"))
-            subprocess.call(cmd, shell=True)
+        dic = {'input_dir':input_dir, 'config':args.config}
+        cmd = "for f in {input_dir}/*.fastq\ndo\n python trim_adapters.py -input_file $f -config {config}\ndone\necho Done trimming reads...".format(**dic)
+        cmd = logcommand.format(insert=cmd)
+        print(cmd)
     if args.indices:
         # make_indices.py nThreads read_length -st -mg -gff -usegtf
         # More info available by running python make_indices.py -h
         cmd = "python make_indices.py -config {0}".format(args.config)
         cmd = logcommand.format(insert=cmd)
         # cmdlist.append(cmd)
-        print(cmd, file=os.path.join(args.outdir, "output.txt"))
-        subprocess.call(cmd, shell=True)
+        print(cmd)
     if args.map_reads:
         # map_reads.py nThreads input_file out_file_dir basepre -st
         # More info available by running python map_reads.py -h
         map_dir = Config.get("ALL", "map_dir")
-        files = glob.glob(os.path.join(map_dir,"*fastq.filtered"))
-        for f in files:
-            cmd  = "python map_reads.py -input_file {0} -config {1}".format(f, args.config)
-            cmd = logcommand.format(insert=cmd)
-            # cmdlist.append(cmd)
-            print(cmd, file=os.path.join(args.outdir, "output.txt"))
-            subprocess.call(cmd, shell=True)
+        dic = {'map_dir': map_dir, 'config': args.config}
+        cmd = "for f in {map_dir}/*.fastq.filtered\ndo\n python map_reads.py -input_file $f -config {config}\ndone\necho Done mapping reads...".format(**dic)
+        cmd = logcommand.format(insert=cmd)
+        print(cmd)
     if args.bed:
         # Converting BAM files to Bed files to Chromosome numbered Bed files for SICER
         print("echo Converting BAM files to Bed files to Chromosome numbered Bed files for SICER")
         bam_dir = Config.get("ALL", "out_file_dir")
-        files = glob.glob(os.path.join(bam_dir,"*/*sortedByCoord.out.bam"))
         output_base = os.path.join(bam_dir, "Bed")
         print("echo Attempting to create directory base: {0}".format(output_base))
-        try:
-            os.makedirs(output_base)
-        except OSError:
-            if not os.path.isdir(output_base):
-                raise
+        cmd = "[ -d {0} ] && echo 'Directory exists' || mkdir -p {0}".format(output_base)
+        print(cmd)
         bam2bed = {'bam_dir': bam_dir, 'outdir': output_base}
-        cmd = "for x in {bam_dir}/*/*.sortedByCoord.out.bam;do y=$(basename ${{x%.*}});bam2bed < $x > {outdir}/$y.bed;done;echo Converting to Bed done".format(**bam2bed)
+        cmd = "for x in {bam_dir}/*/*.sortedByCoord.out.bam\ndo\n y=$(basename ${{x%.*}})\n bam2bed < $x > {outdir}/$y.bed\ndone\necho Converting to Bed done".format(**bam2bed)
         cmd = logcommand.format(insert=cmd)
         # cmdlist.append(cmd)
         print(cmd)
-        subprocess.call(cmd, shell=True)
+        # subprocess.call(cmd, shell=True)
     if args.bed_chr:
         output_bed = Config.get("ALL", "bed_chr_dir")
         output_base = Config.get("ALL", "bed_dir")
         print("echo Attempting to create directory base: {0}".format(output_bed))
-        try:
-            os.makedirs(output_bed)
-        except OSError:
-            if not os.path.isdir(output_bed):
-                raise
+        cmd = "[ -d {0} ] && echo 'Directory exists' || mkdir -p {0}".format(output_bed)
+        print(cmd)
         bed2bed = {'bed_dir': output_base, 'original': "Bd", 'outdir':output_bed}
-        cmd = "for x in {bed_dir}/*.bed;do y=$(basename ${{x%.*}});sed -- 's/{original}/chr/g' $x > {outdir}/$y.sicer.bed;done;echo Converting to Bed chromosome done".format(**bed2bed)
+        cmd = "for x in {bed_dir}/*.bed\ndo\n y=$(basename ${{x%.*}})\n sed -- 's/{original}/chr/g' $x > {outdir}/$y.sicer.bed\ndone\necho Converting to Bed chromosome done".format(**bed2bed)
         cmd = logcommand.format(insert=cmd)
         # cmdlist.append(cmd)
         print(cmd)
-        subprocess.call(cmd, shell=True)
+        # subprocess.call(cmd, shell=True)
     if args.sicer_rb:
         # run_sicer-rb.py InputDir bed_file OutputDir --species --rdthresh --winsize --fragsize --egf --gap_size --eval --sicer
         # More info available by running python run_sicer-rb.py -h
         bed_chr_dir = Config.get("ALL", "bed_chr_dir")
-        files = (glob.glob(os.path.join(bed_chr_dir,"*.sicer.bed")))
-        for f in files:
-            dic = {"input":f, "conf":args.config}
-            cmd = "python run_sicer-rb.py -bed_file {input} -config {conf}".format(**dic)
-            cmd = logcommand.format(insert=cmd)
-            # cmdlist.append(cmd)
-            print(cmd)
-            subprocess.call(cmd, shell=True)
+        dic = {'bed_chr_dir': bed_chr_dir, 'config': args.config}
+        cmd = "for f in {bed_chr_dir}/*.sicer.bed\ndo\n python run_sicer-rb.py -bed_file $f -config {config}\ndone\necho SICER RB Done...".format(**dic)
+        cmd = logcommand.format(insert=cmd)
+        print(cmd)
     if args.sicer:
         # run_sicer.py InputDir bed_file control_file OutputDir --species --rdthresh --winsize --fragsize --egf --gap_size --FDR --sicer
         # More info available by running python run_sicer.py -h
-        bed_dir = Config.get("ALL", "bed_chr_dir")
-        samples = glob.glob(os.path.join(bed_dir, "*sample*.sicer.bed"))
-        controls = glob.glob(os.path.join(bed_dir, "*control*.sicer.bed"))
-        if len(controls) == len(samples):
-            # Assuming equal number of samples and controls properly labelled.
-            joined = zip(samples, controls)
-            for j in joined:
-                dic = {"sample":j[0], "control":j[1], "conf":args.config}
-                cmd = "python run_sicer.py -sample {sample} -control {control} -config {conf}".format(**dic)
-                cmd = logcommand.format(insert=cmd)
-                # cmdlist.append(cmd)
-                print(cmd)
-                # subprocess.call(cmd, shell=True)
-        else:
-            pdb.set_trace()
-            while len(samples) > 0:
-                sample = samples.pop()
-                control = None
-                pattern = re.compile(r'Rep[0-9][0-9]')
-                result = pattern.search(sample)
-                for index in range(len(controls)):
-                    c_result = pattern.search(controls[index])
-                    if result.group() == c_result.group():
-                        control = controls[index]
-                        del controls[index]
-                        break
-                if control:
-                    dic = {"sample": sample, "control": control, "conf": args.config}
-                    cmd = "python run_sicer.py -sample {sample} -control {control} -config {conf}".format(**dic)
-                    cmd = logcommand.format(insert=cmd)
-                    print(cmd)
-                    # subprocess.call(cmd, shell=True)
-                
+        bed_chr_dir = Config.get("ALL", "bed_chr_dir")
+        cmd = "samples=( $(find {bed_chr_dir} -name '*sample*.sicer.bed') )".format(bed_chr_dir=bed_chr_dir)
+        print(cmd)
+        cmd = "controls=( $(find {bed_chr_dir} -name '*control*.sicer.bed') )".format(bed_chr_dir=bed_chr_dir)
+        print(cmd)
+        dic = {'config': args.config}
+        testcmd = 'if [ "${#controls[@]}" -eq "${#samples[@]}" ]; then'
+        print(testcmd)
+        cmd = ("for ((i=0;i<${{#controls[@]}};++i)); do\n     python run_sicer.py -sample ${{samples[i]}} -control ${{controls[i]}} -config {config}\n   done".format(**dic))
+        cmd = logcommand.format(insert=cmd)
+        print("   "+cmd)
+        elsecmd = 'else\n regex="(Rep[0-9][0-9])"'
+        print(elsecmd)
+        forcmd = """ for ((i=0;i<${{#samples[@]}};++i)); do\n     [[ ${{samples[i]}} =~ $regex ]]\n     result="${{BASH_REMATCH[1]}}"\n     for ((j=0;j<${{#controls[@]}};++j));do \n         [[ ${{controls[i]}} =~ $regex ]]\n         c_result="${{BASH_REMATCH[1]}}"\n         if [[ $result = $c_result ]]; then\n          python run_sicer.py -sample ${{samples[i]}} -control ${{controls[j]}} -config {config}\n         fi\n     done\n done\nfi """.format(**dic)
+        print(forcmd)
+        print("unset samples")
+        print("unset controls")
+        print("unset sample")
+        print("unset control")
+        print("unset result")
+        print("unset c_result")
+
 if __name__ == "__main__":
     main()

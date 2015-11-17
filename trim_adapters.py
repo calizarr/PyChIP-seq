@@ -93,7 +93,7 @@ def main():
                   cutoff_qual, cutoff_qual, minlen)
     print("Running Trimmommatic with this command:")
     print(cmd, "\n")
-    # subprocess.call(cmd, shell=True)
+    subprocess.call(cmd, shell=True)
 
 if __name__ == "__main__":
     main()
