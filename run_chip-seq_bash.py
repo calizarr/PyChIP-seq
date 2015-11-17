@@ -36,8 +36,6 @@ def main():
         Config.read(args.config)
     else:
         sys.exit("Wrapper script needs a Config file to continue. Please provide -config.\nA sample file has been provided in the git.")
-    # List of commands to be printed at end.
-    cmdlist = []
     # Getting the current date and setting log files.
     now = datetime.datetime.now().strftime("%Y-%m-%d")
     log_out = "{0}_ChIP-seq.out.log".format(now)
@@ -57,7 +55,6 @@ def main():
         # More info available by running python make_indices.py -h
         cmd = "python make_indices.py -config {0}".format(args.config)
         cmd = logcommand.format(insert=cmd)
-        # cmdlist.append(cmd)
         print(cmd)
     if args.map_reads:
         # map_reads.py nThreads input_file out_file_dir basepre -st
@@ -78,9 +75,7 @@ def main():
         bam2bed = {'bam_dir': bam_dir, 'outdir': output_base}
         cmd = "for x in {bam_dir}/*/*.sortedByCoord.out.bam\ndo\n y=$(basename ${{x%.*}})\n bam2bed < $x > {outdir}/$y.bed\ndone\necho Converting to Bed done".format(**bam2bed)
         cmd = logcommand.format(insert=cmd)
-        # cmdlist.append(cmd)
         print(cmd)
-        # subprocess.call(cmd, shell=True)
     if args.bed_chr:
         output_bed = Config.get("ALL", "bed_chr_dir")
         output_base = Config.get("ALL", "bed_dir")
@@ -90,9 +85,7 @@ def main():
         bed2bed = {'bed_dir': output_base, 'original': "Bd", 'outdir':output_bed}
         cmd = "for x in {bed_dir}/*.bed\ndo\n y=$(basename ${{x%.*}})\n sed -- 's/{original}/chr/g' $x > {outdir}/$y.sicer.bed\ndone\necho Converting to Bed chromosome done".format(**bed2bed)
         cmd = logcommand.format(insert=cmd)
-        # cmdlist.append(cmd)
         print(cmd)
-        # subprocess.call(cmd, shell=True)
     if args.sicer_rb:
         # run_sicer-rb.py InputDir bed_file OutputDir --species --rdthresh --winsize --fragsize --egf --gap_size --eval --sicer
         # More info available by running python run_sicer-rb.py -h
@@ -110,14 +103,15 @@ def main():
         cmd = "controls=( $(find {bed_chr_dir} -name '*control*.sicer.bed') )".format(bed_chr_dir=bed_chr_dir)
         print(cmd)
         dic = {'config': args.config}
-        testcmd = 'if [ "${#controls[@]}" -eq "${#samples[@]}" ]; then'
-        print(testcmd)
-        cmd = ("for ((i=0;i<${{#controls[@]}};++i)); do\n     python run_sicer.py -sample ${{samples[i]}} -control ${{controls[i]}} -config {config}\n   done".format(**dic))
-        cmd = logcommand.format(insert=cmd)
-        print("   "+cmd)
-        elsecmd = 'else\n regex="(Rep[0-9][0-9])"'
+        # testcmd = 'if [ "${#controls[@]}" -eq "${#samples[@]}" ]; then'
+        # print(testcmd)
+        # cmd = ("for ((i=0;i<${{#controls[@]}};++i)); do\n     python run_sicer.py -sample ${{samples[i]}} -control ${{controls[i]}} -config {config}\n   done".format(**dic))
+        # cmd = logcommand.format(insert=cmd)
+        # print("   "+cmd)
+        elsecmd = 'regex="(Rep[0-9][0-9])"'
         print(elsecmd)
-        forcmd = """ for ((i=0;i<${{#samples[@]}};++i)); do\n     [[ ${{samples[i]}} =~ $regex ]]\n     result="${{BASH_REMATCH[1]}}"\n     for ((j=0;j<${{#controls[@]}};++j));do \n         [[ ${{controls[i]}} =~ $regex ]]\n         c_result="${{BASH_REMATCH[1]}}"\n         if [[ $result = $c_result ]]; then\n          python run_sicer.py -sample ${{samples[i]}} -control ${{controls[j]}} -config {config}\n         fi\n     done\n done\nfi """.format(**dic)
+        forcmd = """for ((i=0;i<${{#samples[@]}};++i)); do\n      [[ ${{samples[i]}} =~ $regex ]]\n      result="${{BASH_REMATCH[1]}}"\n      for ((j=0;j<${{#controls[@]}};++j));do \n         [[ ${{controls[i]}} =~ $regex ]]\n         c_result="${{BASH_REMATCH[1]}}"\n         if [[ $result = $c_result ]]; then\n          python run_sicer.py -sample ${{samples[i]}} -control ${{controls[j]}} -config {config}\n         fi\n     done\n""".format(**dic)
+        forcmd = logcommand.format(insert=forcmd)
         print(forcmd)
         print("unset samples")
         print("unset controls")

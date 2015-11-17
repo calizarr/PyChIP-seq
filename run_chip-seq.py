@@ -54,17 +54,17 @@ def main():
         # files = [f.strip() for f in files]
         for f in files: 
             cmd = "python trim_adapters.py -input_file {0} -config {1}".format(f, args.config)
+            cmdlist.append(cmd)
             cmd = logcommand.format(insert=cmd)
-            # cmdlist.append(cmd)
-            print(cmd, file=os.path.join(args.outdir, "output.txt"))
+            print(cmd)
             subprocess.call(cmd, shell=True)
     if args.indices:
         # make_indices.py nThreads read_length -st -mg -gff -usegtf
         # More info available by running python make_indices.py -h
         cmd = "python make_indices.py -config {0}".format(args.config)
+        cmdlist.append(cmd)
         cmd = logcommand.format(insert=cmd)
-        # cmdlist.append(cmd)
-        print(cmd, file=os.path.join(args.outdir, "output.txt"))
+        print(cmd)
         subprocess.call(cmd, shell=True)
     if args.map_reads:
         # map_reads.py nThreads input_file out_file_dir basepre -st
@@ -73,9 +73,9 @@ def main():
         files = glob.glob(os.path.join(map_dir,"*fastq.filtered"))
         for f in files:
             cmd  = "python map_reads.py -input_file {0} -config {1}".format(f, args.config)
+            cmdlist.append(cmd)
             cmd = logcommand.format(insert=cmd)
-            # cmdlist.append(cmd)
-            print(cmd, file=os.path.join(args.outdir, "output.txt"))
+            print(cmd)
             subprocess.call(cmd, shell=True)
     if args.bed:
         # Converting BAM files to Bed files to Chromosome numbered Bed files for SICER
@@ -91,8 +91,8 @@ def main():
                 raise
         bam2bed = {'bam_dir': bam_dir, 'outdir': output_base}
         cmd = "for x in {bam_dir}/*/*.sortedByCoord.out.bam;do y=$(basename ${{x%.*}});bam2bed < $x > {outdir}/$y.bed;done;echo Converting to Bed done".format(**bam2bed)
+        cmdlist.append(cmd)
         cmd = logcommand.format(insert=cmd)
-        # cmdlist.append(cmd)
         print(cmd)
         subprocess.call(cmd, shell=True)
     if args.bed_chr:
@@ -106,8 +106,8 @@ def main():
                 raise
         bed2bed = {'bed_dir': output_base, 'original': "Bd", 'outdir':output_bed}
         cmd = "for x in {bed_dir}/*.bed;do y=$(basename ${{x%.*}});sed -- 's/{original}/chr/g' $x > {outdir}/$y.sicer.bed;done;echo Converting to Bed chromosome done".format(**bed2bed)
+        cmdlist.append(cmd)
         cmd = logcommand.format(insert=cmd)
-        # cmdlist.append(cmd)
         print(cmd)
         subprocess.call(cmd, shell=True)
     if args.sicer_rb:
@@ -118,8 +118,8 @@ def main():
         for f in files:
             dic = {"input":f, "conf":args.config}
             cmd = "python run_sicer-rb.py -bed_file {input} -config {conf}".format(**dic)
+            cmdlist.append(cmd)
             cmd = logcommand.format(insert=cmd)
-            # cmdlist.append(cmd)
             print(cmd)
             subprocess.call(cmd, shell=True)
     if args.sicer:
@@ -128,35 +128,35 @@ def main():
         bed_dir = Config.get("ALL", "bed_chr_dir")
         samples = glob.glob(os.path.join(bed_dir, "*sample*.sicer.bed"))
         controls = glob.glob(os.path.join(bed_dir, "*control*.sicer.bed"))
-        if len(controls) == len(samples):
-            # Assuming equal number of samples and controls properly labelled.
-            joined = zip(samples, controls)
-            for j in joined:
-                dic = {"sample":j[0], "control":j[1], "conf":args.config}
+        # if len(controls) == len(samples):
+        #     # Assuming equal number of samples and controls properly labelled.
+        #     joined = zip(samples, controls)
+        #     for j in joined:
+        #         dic = {"sample":j[0], "control":j[1], "conf":args.config}
+        #         cmd = "python run_sicer.py -sample {sample} -control {control} -config {conf}".format(**dic)
+        #         cmdlist.append(cmd)
+        #         cmd = logcommand.format(insert=cmd)
+        #         print(cmd)
+        #         subprocess.call(cmd, shell=True)
+        # else:
+        while len(samples) > 0:
+            sample = samples.pop()
+            control = None
+            pattern = re.compile(r'Rep[0-9][0-9]')
+            result = pattern.search(sample)
+            for index in range(len(controls)):
+                c_result = pattern.search(controls[index])
+                if result.group() == c_result.group():
+                    control = controls[index]
+                    del controls[index]
+                    break
+            if control:
+                dic = {"sample": sample, "control": control, "conf": args.config}
                 cmd = "python run_sicer.py -sample {sample} -control {control} -config {conf}".format(**dic)
+                cmdlist.append(cmd)
                 cmd = logcommand.format(insert=cmd)
-                # cmdlist.append(cmd)
                 print(cmd)
-                # subprocess.call(cmd, shell=True)
-        else:
-            pdb.set_trace()
-            while len(samples) > 0:
-                sample = samples.pop()
-                control = None
-                pattern = re.compile(r'Rep[0-9][0-9]')
-                result = pattern.search(sample)
-                for index in range(len(controls)):
-                    c_result = pattern.search(controls[index])
-                    if result.group() == c_result.group():
-                        control = controls[index]
-                        del controls[index]
-                        break
-                if control:
-                    dic = {"sample": sample, "control": control, "conf": args.config}
-                    cmd = "python run_sicer.py -sample {sample} -control {control} -config {conf}".format(**dic)
-                    cmd = logcommand.format(insert=cmd)
-                    print(cmd)
-                    # subprocess.call(cmd, shell=True)
+                subprocess.call(cmd, shell=True)
                 
 if __name__ == "__main__":
     main()

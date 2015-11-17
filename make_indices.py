@@ -58,7 +58,7 @@ def main():
           .format(nThreads, st, mg, gff, read_length)
     print("Running cmd: ")
     print(cmd)
-    # subprocess.call(cmd, shell=True)
+    subprocess.call(cmd, shell=True)
 
 
 if __name__ == "__main__":
